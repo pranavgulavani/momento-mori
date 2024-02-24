@@ -1,11 +1,5 @@
 import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-} from "../ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "../ui/card";
 import { Button } from "../ui/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -13,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -22,28 +15,42 @@ import {
 import { Input } from "../ui/input";
 
 type CardProps = React.ComponentProps<typeof Card>;
+type MomentoForm = {
+  handleResult: () => void;
+};
 
 const formSchema = z.object({
-  Birthday: z.string().min(2).max(50),
+  dob: z.string({
+    required_error: "A date of birth is required.",
+  }),
+  expectancy: z.coerce
+    .number({ required_error: "Expectancy is required" })
+    .max(150, { message: "expectancy should be less than 150" })
+    .positive({ message: "expectancy should be greater than 0" }),
 });
 
-export default function MomentoForm({ className, ...props }: CardProps) {
+export default function MomentoForm({
+  className,
+  handleResult,
+  ...props
+}: CardProps & MomentoForm) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      Birthday: "",
+      dob: "2024-02-09",
+      expectancy: 50,
     },
   });
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+    // ✅ This will be type-safe and validated
     console.log(values);
   }
   return (
     <div className="flex-grow flex justify-center items-center">
-      <Card className={cn("w-[380px]")}>
+      <Card className={cn("w-[380px] mx-2 md:mx-auto")}>
         <CardHeader>
           <CardDescription>Please fill the details</CardDescription>
         </CardHeader>
@@ -52,21 +59,35 @@ export default function MomentoForm({ className, ...props }: CardProps) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <FormField
                 control={form.control}
-                name="Birthday"
+                name="expectancy"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Birthdate</FormLabel>
+                    <FormLabel>Expectancy</FormLabel>
                     <FormControl>
-                      <Input placeholder="birthday" {...field} type="date" />
+                      <Input
+                        placeholder="expectancy"
+                        {...field}
+                        type="number"
+                      />
                     </FormControl>
-                    <FormDescription>
-                      This is your public display name.
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button variant="default" className={cn("w-full")}>
+              <FormField
+                control={form.control}
+                name="dob"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Expectancy</FormLabel>
+                    <FormControl>
+                      <Input placeholder="birthdate" {...field} type="date" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button variant="default" className={cn("w-full")} type="submit">
                 Submit
               </Button>
             </form>
