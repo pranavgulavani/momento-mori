@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { calculateTimeInWeeks, cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader } from "../ui/card";
 import { Button } from "../ui/button";
 import { z } from "zod";
@@ -16,7 +16,12 @@ import { Input } from "../ui/input";
 
 type CardProps = React.ComponentProps<typeof Card>;
 type MomentoForm = {
-  handleResult: () => void;
+  handleSetData: (
+    weekSpent: number,
+    weeksRemaining: number,
+    spentLifeInPecentage: number,
+    age: number
+  ) => void;
 };
 
 const formSchema = z.object({
@@ -31,7 +36,7 @@ const formSchema = z.object({
 
 export default function MomentoForm({
   className,
-  handleResult,
+  handleSetData,
   ...props
 }: CardProps & MomentoForm) {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -46,17 +51,41 @@ export default function MomentoForm({
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated
+    const birthday = new Date(form.getValues("dob"));
+    const result = calculateTimeInWeeks(birthday, form.getValues("expectancy"));
+    console.log(result, "result");
+    const spentLifeInPecentage =
+      (result.weeksSpent / (result.weeksSpent + result.weeksRemaining)) * 100;
+    handleSetData(
+      result.weeksSpent,
+      result.weeksRemaining,
+      spentLifeInPecentage,
+      result.ageInYears
+    );
     console.log(values);
   }
   return (
-    <div className="flex-grow flex justify-center items-center">
-      <Card className={cn("w-[380px] mx-2 md:mx-auto")}>
+    <div>
+      <Card className={cn(" w-[350px]  md:w-[380px] mx-2 md:mx-auto h-96")}>
         <CardHeader>
           <CardDescription>Please fill the details</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <FormField
+                control={form.control}
+                name="dob"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Birthday</FormLabel>
+                    <FormControl>
+                      <Input placeholder="birthdate" {...field} type="date" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="expectancy"
@@ -69,19 +98,6 @@ export default function MomentoForm({
                         {...field}
                         type="number"
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="dob"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Expectancy</FormLabel>
-                    <FormControl>
-                      <Input placeholder="birthdate" {...field} type="date" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
