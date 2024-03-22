@@ -20,14 +20,20 @@ type MomentoForm = {
     weekSpent: number,
     weeksRemaining: number,
     spentLifeInPecentage: number,
-    age: number
+    age: number,
+    monthsSpent: number,
+    monthsRemaining: number
   ) => void;
 };
 
 const formSchema = z.object({
-  dob: z.string({
-    required_error: "A date of birth is required.",
-  }),
+  dob: z
+    .string({
+      required_error: "A date of birth is required.",
+    })
+    .refine((date) => {
+      return new Date(date) <= new Date(Date.now());
+    }, "The date must be before today"),
   expectancy: z.coerce
     .number({ required_error: "Expectancy is required" })
     .max(150, { message: "expectancy should be less than 150" })
@@ -60,7 +66,9 @@ export default function MomentoForm({
       result.weeksSpent,
       result.weeksRemaining,
       spentLifeInPecentage,
-      result.ageInYears
+      result.ageInYears,
+      result.timeSpentInMonths,
+      result.remainingMonths
     );
     console.log(values);
   }

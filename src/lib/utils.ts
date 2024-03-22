@@ -9,45 +9,49 @@ export function cn(...inputs: ClassValue[]) {
 export function calculateTimeInWeeks(
   birthDate: Date,
   lifeExpectancy: number
-): { weeksSpent: number; weeksRemaining: number; ageInYears: number } {
-  const birth = birthDate;
+): {
+  weeksSpent: number;
+  weeksRemaining: number;
+  ageInYears: number;
+  timeSpentInMonths: number;
+  remainingMonths: number;
+} {
+  // Step 1: Convert date strings to Date objects
+  const bDate = new Date(birthDate);
+  const currentDate = new Date();
 
-  const expectancy = lifeExpectancy;
-
-  const currentTime = new Date();
-
-  const ageInMilliseconds = currentTime.getTime() - birth.getTime();
-
-  const currentMonth = currentTime.getMonth();
-  const birthMonth = birth.getMonth();
-  console.log(currentMonth, birthMonth);
+  const ageInMilliseconds = currentDate.getTime() - bDate.getTime();
   const ageInYears = Math.floor(
     ageInMilliseconds / (1000 * 60 * 60 * 24 * 365.25)
   );
 
-  console.log("Age in Years :", ageInYears);
+  // Step 2: Calculate total number of weeks since birth
+  const millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
+  const totalWeeksSinceBirth = Math.floor(
+    (currentDate.getTime() - bDate.getTime()) / millisecondsPerWeek
+  );
 
-  const yearsRemaining = lifeExpectancy - ageInYears;
-  console.log("Years remaining :", yearsRemaining);
+  // Step 3: Calculate remaining life expectancy in weeks
+  const remainingWeeks = Math.max(
+    0,
+    lifeExpectancy * 52 - totalWeeksSinceBirth
+  );
+  // Calculate Months there are approximately 4.34524 weeks in a month
+  const timeSpentInMonths = Math.floor(totalWeeksSinceBirth / 4.34524);
+  const remainingMonths = Math.floor(remainingWeeks / 4.34524);
 
-  let weeksSpent = ageInYears * 52;
-  console.log("Weeks spent :", weeksSpent);
+  console.table({
+    ageInYears: ageInYears,
+    weeksSpent: totalWeeksSinceBirth,
+    remainingWeeks: remainingWeeks,
+  });
 
-  const millisecondsInWeek = 1000 * 60 * 60 * 24 * 7;
-  const weeksElapsed = Math.floor(ageInMilliseconds / millisecondsInWeek);
-
-  // if (birthMonth < currentMonth) {
-  //   // Check if the birth date day is after the current day
-  //   if (birth.getDate() > currentTime.getDate()) {
-  //     weeksSpent -= 1; // Subtract 1 week if the birth date is later in the month
-  //   }
-  // } else if (birthMonth === currentMonth) {
-  //   weeksSpent += weeksElapsed; // Add the weeks elapsed within the current month
-  // }
-
-  const weeksRemaining = yearsRemaining * 52;
-
-  console.log("Weeks in Remaining :", weeksRemaining);
-
-  return { weeksSpent, weeksRemaining, ageInYears };
+  // Step 4: Return total weeks, weeks spent, and remaining weeks
+  return {
+    ageInYears,
+    weeksSpent: totalWeeksSinceBirth,
+    weeksRemaining: remainingWeeks,
+    remainingMonths,
+    timeSpentInMonths,
+  };
 }
